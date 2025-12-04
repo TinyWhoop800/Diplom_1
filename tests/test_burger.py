@@ -1,6 +1,7 @@
 import pytest
 from praktikum.burger import Burger
 from test_data.burger_data import move_ingredient_params
+from unittest.mock import Mock
 
 class TestBurger:
     """Тесты для класса Burger"""
@@ -76,14 +77,22 @@ class TestBurger:
         assert receipt.count(f'(==== {bun_name} ====)') == 2
         assert "Price:" in receipt
 
-
     def test_get_receipt_with_ingredients(self, mock_bun, parametrized_ingredient):
         """Чек с ингредиентами: булочки + ингредиент + цена"""
         burger = Burger()
         burger.set_buns(mock_bun)
         burger.add_ingredient(parametrized_ingredient)
+
+        burger.get_price = Mock(return_value=350.0)
+
         receipt = burger.get_receipt()
 
-        assert mock_bun.get_name() in receipt
-        assert parametrized_ingredient.get_name() in receipt
-        assert "Price:" in receipt
+        expected_receipt = (
+            f"(==== {mock_bun.get_name()} ====)\n"
+            f"= {parametrized_ingredient.get_type().lower()} {parametrized_ingredient.get_name()} =\n"
+            f"(==== {mock_bun.get_name()} ====)\n\n"
+            "Price: 350.0"
+        )
+
+        assert receipt == expected_receipt
+
